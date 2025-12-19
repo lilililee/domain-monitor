@@ -5,5 +5,8 @@ import basicSsl from '@vitejs/plugin-basic-ssl'
 // https://vite.dev/config/
 export default defineConfig({
   base: './',
+  build: {
+    outDir: 'docs'
+  },
   plugins: [react(), basicSsl()]
 })
