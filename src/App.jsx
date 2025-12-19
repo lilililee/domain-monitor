@@ -23,7 +23,7 @@ function App() {
   }
 
   const [domains, setDomains] = useState(() => getInitialData('domains', []))
-  const [settings, setSettings] = useState(() => getInitialData('settings', { interval: 60, startHour: 9, endHour: 20 }))
+  const [settings, setSettings] = useState(() => getInitialData('settings', { interval: 300, startHour: 9, endHour: 21 }))
   const [loading, setLoading] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [showBatchImport, setShowBatchImport] = useState(false)
@@ -58,17 +58,34 @@ function App() {
     localStorage.setItem('domain-monitor-data', JSON.stringify({ domains, settings }))
   }, [domains, settings])
 
+  const hasRequestedPermission = useRef(false)
+
   const requestNotificationPermission = async () => {
+    if (hasRequestedPermission.current) return
+    hasRequestedPermission.current = true
+
     const result = await Notification.requestPermission()
     setPermission(result)
     addLog(`Permission requested: ${result}`)
     if (result === 'granted') {
-      new Notification('SYSTEM_ONLINE', { body: 'Notification subsystem initialized.' })
+      // new Notification('SYSTEM_ONLINE', { body: 'Notification subsystem initialized.' })
       toast.success('NOTIFICATION_GRANTED')
     } else {
       toast.error('NOTIFICATION_DENIED')
     }
+    // Resetting after some time to allow retry if needed, though in this flow it's mainly for init
+    setTimeout(() => {
+      hasRequestedPermission.current = false
+    }, 1000)
   }
+
+  // Auto-request notification permission on mount
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      requestNotificationPermission()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const testNotification = () => {
     addLog('User clicked Test Notification')
@@ -85,25 +102,6 @@ function App() {
     } else {
       toast.error('PERMISSION_REQUIRED')
     }
-  }
-
-  const testDelayedNotification = () => {
-    addLog('Starting 5s delay test...')
-    toast('AUTO_TRIGGER_IN_5S...', { icon: '⏳' })
-    setTimeout(() => {
-      addLog('Timer fired. Attempting to send notification without user interaction...')
-      if (Notification.permission === 'granted') {
-        try {
-          const n = new Notification('DELAY_TEST_SUCCESS', { body: 'Automated protocol execution complete.' })
-          n.onshow = () => addLog('Delayed notification displayed!')
-          n.onerror = (e) => addLog(`Delayed notification error: ${e}`)
-        } catch (e) {
-          addLog(`Exception in delayed notification: ${e.message}`)
-        }
-      } else {
-        addLog('Permission not granted for delayed test')
-      }
-    }, 5000)
   }
 
   // Monitoring Loop
@@ -587,9 +585,7 @@ function App() {
               settings={settings}
               permission={permission}
               debugLog={debugLog}
-              onRequestPermission={requestNotificationPermission}
               onTestNotification={testNotification}
-              onTestDelayedNotification={testDelayedNotification}
               onSaveSettings={updateSettings}
               onImportConfig={handleImportConfig}
               onExportConfig={exportConfig}

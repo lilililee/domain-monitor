@@ -1,18 +1,7 @@
 import React, { useState, useRef } from 'react'
 import { Zap, Upload, Download, Trash2 } from 'lucide-react'
 
-export function SettingsModal({
-  settings,
-  permission,
-  debugLog,
-  onRequestPermission,
-  onTestNotification,
-  onTestDelayedNotification,
-  onSaveSettings,
-  onImportConfig,
-  onExportConfig,
-  onClearAll
-}) {
+export function SettingsModal({ settings, permission, debugLog, onTestNotification, onSaveSettings, onImportConfig, onExportConfig, onClearAll }) {
   const [localInterval, setLocalInterval] = useState(settings.interval)
   const [startHour, setStartHour] = useState(settings.startHour ?? 9)
   const [endHour, setEndHour] = useState(settings.endHour ?? 20)
@@ -74,7 +63,7 @@ export function SettingsModal({
       <div className="grid md:grid-cols-2 gap-4 flex-1 min-h-0">
         <div className="space-y-3 flex flex-col overflow-y-auto custom-scrollbar pr-2">
           <div className="p-3 bg-slate-950/50 rounded border border-slate-800 flex-none">
-            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Notification Subsystem</h3>
+            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Notification</h3>
             <div className="flex flex-wrap gap-2 items-center">
               <span
                 className={`px-2 py-1 text-xs border ${
@@ -84,20 +73,8 @@ export function SettingsModal({
                 STATUS: {permission === 'granted' ? 'GRANTED' : permission === 'denied' ? 'DENIED' : 'UNKNOWN'}
               </span>
 
-              {permission !== 'granted' && (
-                <button onClick={onRequestPermission} className="text-xs px-3 py-1 bg-blue-600/20 text-blue-400 border border-blue-500/50 hover:bg-blue-600/40 transition-colors">
-                  INITIALIZE
-                </button>
-              )}
-
               <button onClick={onTestNotification} className="text-xs px-3 py-1 bg-slate-800 text-slate-300 border border-slate-600 hover:border-slate-400 transition-colors">
                 TEST PING
-              </button>
-              <button
-                onClick={onTestDelayedNotification}
-                className="text-xs px-3 py-1 bg-purple-900/20 text-purple-400 border border-purple-500/30 hover:bg-purple-900/40 transition-colors"
-              >
-                TEST DELAY (5s)
               </button>
             </div>
           </div>
